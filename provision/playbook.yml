@@ -1,0 +1,10 @@
+---
+# This playbook sets up whole stack.
+ 
+- name: Configurations for elk stack
+  hosts: basevm1
+  vars_files:
+    - ../vagrant.yml
+  remote_user: vagrant # Remote user
+  roles:
+    - setup_elk

@@ -1,0 +1,20 @@
+---
+# ####################################################################
+#
+# This playbook contains the jobs needed to setup the base environment
+#
+# ####################################################################
+
+# apt install various packages needed for elk stack
+- name: SETUP | install packages 
+  become: yes
+  apt: 
+    name: 
+    - curl
+    - apt-transport-https 
+    - gnupg-agent
+    - software-properties-common
+    - wget
+    - openjdk-8-jdk
+    state: latest
+    update_cache: yes

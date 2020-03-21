@@ -1,0 +1,82 @@
+---
+# ###################################################################
+#
+# This playbook contains the nginx setup and installation steps
+#
+# ###################################################################
+
+# apt install nginx
+- name: SETUP | install packages 
+  become: yes
+  apt: 
+    name: 
+    - nginx
+    state: latest
+    update_cache: yes
+  tags:
+    - nginx
+
+# Let's reset the initial password (if any) for accessing kibana
+- name: NGINX | Set up passwd for kibana 
+  become: yes
+  file:
+    dest: /etc/nginx/htpasswd.kibana
+    state: absent
+  tags:
+    - nginx
+
+# Let's setup an initial password for accessing kibana
+- name: NGINX | Set up passwd for kibana 
+  become: yes
+  file:
+    dest: /etc/nginx/htpasswd.kibana
+    state: touch
+  tags:
+    - nginx
+
+# Hash the plain text passwd
+- name: NGINX | Create a passwd for kibana
+  shell: openssl passwd -apr1 {{ kibana_default_passwd }}
+  register: kibana_hashed_password
+  tags:
+    - nginx
+
+# Store the passwd
+- name: NGINX | append passwd for kibana to nginx conf
+  become: yes
+  lineinfile:
+    dest: /etc/nginx/htpasswd.kibana
+    line: "{{ kibana_default_username }}:{{ kibana_hashed_password.stdout }}"
+    insertbefore: BOF
+  register: update_nginx_kibana_passwd
+  tags:
+    - nginx
+
+# Copy nginx configuration file that exposes kibana
+- name: NGINX | Copy NGINX s conf template
+  become: yes
+  copy:
+    src: /var/tmp/elk/nginx/nginx.conf
+    dest: /etc/nginx/
+    force: yes
+  register: update_nginx_conf
+  tags:
+    - nginx
+
+# Double check that nginx conf is fine
+- name: NGINX | Final conf file check
+  become: yes
+  shell: nginx -t
+  register: update_nginx_conf_check
+  when: update_nginx_conf.changed
+  failed_when: update_nginx_conf_check.rc == 1
+  tags:
+    - nginx
+
+# Reload nginx if changes detected. Reload handles connections graceful so no downtime.
+- name: SETUP | Reload nginx
+  shell: echo "Configuration changes detected. Reloading nginx"
+  notify: NGINX | Reload
+  when: update_nginx_conf.changed or update_nginx_kibana_passwd.changed
+  tags:
+    - nginx

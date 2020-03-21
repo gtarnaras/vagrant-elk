@@ -1,0 +1,60 @@
+---
+# #########################################################################
+#
+# This playbook contains the elasticsearch installation steps
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/deb.html
+#
+# #########################################################################
+
+# curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+- name: ELASTICSEARCH | Add elastic s gpg key 
+  become: yes
+  shell: curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+  tags:
+    - elasticsearch
+
+# sudo apt-key fingerprint  D88E42B4
+- name: ELASTICSEARCH | Verify that we have the key with the fingerprint
+  apt_key:
+    id:  D88E42B4
+    state: present
+  tags:
+    - elasticsearch
+ 
+# Install from apt repo "https://artifacts.elastic.co/packages/6.x/apt stable main"
+- name: ELASTICSEARCH | Set up the elastic stable repository 
+  become: yes
+  copy:
+    dest: "/etc/apt/sources.list.d/elastic-6.x.list"
+    content: |
+      deb https://artifacts.elastic.co/packages/6.x/apt stable main
+  tags:
+    - elasticsearch
+
+# sudo apt-get update
+- name: ELASTICSEARCH | Update apt packages
+  become: yes
+  apt:
+    update_cache: yes
+  tags:
+    - elasticsearch
+
+# apt install elasticsearch
+- name: ELASTICSEARCH | install elastic packages 
+  become: yes
+  apt: 
+    name: 
+    - elasticsearch
+    state: latest
+  tags:
+    - elasticsearch
+
+# Make sure elastic is up and running with systemd
+- name: ELASTICSEARCH | check if elasticsearch is up
+  become: yes
+  service: 
+    name: elasticsearch
+    state: started
+    enabled: yes
+  tags:
+    - elasticsearch

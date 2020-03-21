@@ -1,0 +1,12 @@
+---
+# ###################################################################
+#
+# This playbook contains common handlers/hooks that can be called in 
+# various environment setup tasks.
+#
+# ###################################################################
+
+# Reload nginx
+- name: NGINX | Reload
+  become: yes
+  shell: systemctl reload nginx

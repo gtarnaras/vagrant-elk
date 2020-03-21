@@ -1,0 +1,45 @@
+---
+# ##########################################################################
+#
+# This playbook contains the logstash installation steps
+# https://www.elastic.co/guide/en/logstash/current/installing-logstash.html
+#
+# ##########################################################################
+
+#
+# GPG keys and apt repos are aleady installed from elasticsearch.yml
+# task since logstash is part of the elastic stack ang gpg key and repo
+# are identical.
+#
+
+# apt install logstash
+- name: LOGSTASH | install logstash packages 
+  become: yes
+  apt: 
+    name: 
+    - logstash
+    state: latest
+    update_cache: yes
+  tags:
+    - logstash
+
+# Copy logstash conf
+- name: LOGSTASH | Copy logstash conf template
+  become: yes
+  copy:
+    src: /var/tmp/elk/logstash/logstash.yml
+    dest: /etc/logstash/
+    force: yes
+  register: update_logstash_conf
+  tags:
+    - logstash
+
+# Make sure logstash is up and running with systemd
+- name: LOGSTASH | check if logstash is up
+  become: yes
+  service: 
+    name: logstash
+    state: started
+    enabled: yes
+  tags:
+    - logstash

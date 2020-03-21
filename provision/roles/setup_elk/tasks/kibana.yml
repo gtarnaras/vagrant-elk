@@ -1,0 +1,45 @@
+---
+# #########################################################################
+#
+# This playbook contains the kiabana installation steps
+# https://www.elastic.co/guide/en/kibana/current/deb.html
+#
+# #########################################################################
+
+#
+# GPG keys and apt repos are aleady installed from elasticsearch.yml
+# task since Kibana is part of the elastic stack ang gpg key and repo
+# are identical.
+#
+
+# apt install kibana
+- name: KIBANA | install kibana packages 
+  become: yes
+  apt: 
+    name: 
+    - kibana
+    state: latest
+    update_cache: yes
+  tags:
+    - kibana
+
+# Copy kibana conf
+- name: KIBANA | Copy KIBANA s conf template
+  become: yes
+  copy:
+    src: /var/tmp/elk/kibana/kibana.yml
+    dest: /etc/kibana/
+    force: yes
+  register: update_kibana_conf
+  tags:
+    - kibana
+
+# Make sure kibana is up and running with systemd
+- name: KIBANA | check if kibana is up
+  become: yes
+  service: 
+    name: kibana
+    state: started
+    enabled: yes
+  tags:
+    - kibana

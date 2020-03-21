@@ -1,0 +1,10 @@
+---
+######### VM Options ##########
+
+basevm1ip_address: 192.168.2.101
+basevm1_name: basevm1
+
+######### Passwords ###########
+
+kibana_default_username: admin
+kibana_default_passwd: admin
